@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bethlehem House | Inventory</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">B</div>
+            <span>Bethlehem House</span>
+        </div>
+        <nav class="menu">
+            <a href="javascript:void(0)" class="menu-item active" onclick="showSection('scan-box', this)"><span>🔍</span> Scan Barcode</a>
+            <a href="javascript:void(0)" class="menu-item" onclick="showSection('quick-use-box', this)"><span>⚡</span> Quick Use Scan</a>
+            <a href="javascript:void(0)" class="menu-item" onclick="showSection('donation-box', this)"><span>🎁</span> New Donation</a>
+            <a href="javascript:void(0)" class="menu-item" onclick="showSection('generate-box', this)"><span>🏷️</span> Generate Tags</a>
+            <a href="javascript:void(0)" class="menu-item" onclick="showSection('inventory-box', this)"><span>📊</span> Inventory View</a>
+            <a href="javascript:void(0)" class="menu-item" onclick="showSection('history-box', this)"><span>📜</span> View History</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+
+            <header class="top-bar">
+                <h1 id="view-title">Dashboard Overview</h1>
+
+                <div class="top-bar-right">
+                    <button onclick="toggleDarkMode()" class="theme-toggle-btn" title="Toggle Dark Mode">
+                        <span id="theme-icon">🌙</span>
+                    </button>
+                    
+                    <div class="notification-wrapper">
+                        <div class="bell-container" onclick="toggleNotifications()">
+                            <span class="bell-icon">🔔</span>
+                            <span id="notif-badge" class="badge">3</span>
+                            <div class="bell-pulse"></div>
+                        </div>
+                        
+                        <div id="notif-dropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <div class="header-main-info">
+                                    <h3>Notifications</h3>
+                                    <div class="notif-filters">
+                                        <span class="filter-pill active">All</span>
+                                        <span class="filter-pill">Unread</span>
+                                    </div>
+                                </div>
+                                <button class="btn-clear-notif" onclick="clearAllNotifs()">Clear All</button>
+                            </div>
+
+                            <div id="alert-list" class="custom-scrollbar">
+                                <div class="notif-card critical">
+                                    <div class="card-left">
+                                        <div class="avatar-circle">
+                                            <span class="avatar-icon">🥩</span>
+                                            <div class="status-indicator pulse-red"></div>
+                                        </div>
+                                    </div>
+                                    <div class="card-right">
+                                        <p class="card-text"><strong>Ferdinand</strong> (Beef) is expiring in <span class="text-danger">3 days</span>.</p>
+                                        <span class="card-time">Just now</span>
+                                        <div class="card-actions">
+                                            <button class="btn-confirm" onclick="showSection('inventory-box')">Use Now</button>
+                                            <button class="btn-delete" onclick="dismissNotif(this)">Dismiss</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="notif-card warning">
+                                    <div class="card-left">
+                                        <div class="avatar-circle">
+                                            <span class="avatar-icon">🥯</span>
+                                            <div class="status-indicator orange"></div>
+                                        </div>
+                                    </div>
+                                    <div class="card-right">
+                                        <p class="card-text"><strong>Burgerrrsss</strong> stock is reaching low levels.</p>
+                                        <span class="card-time">2 hours ago</span>
+                                        <div class="card-actions">
+                                            <button class="btn-confirm" onclick="showSection('inventory-box')">Restock</button>
+                                            <button class="btn-delete" onclick="dismissNotif(this)">Ignore</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="notif-footer">
+                                <a href="javascript:void(0)" onclick="showSection('inventory-box')">View Full Warehouse Report</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="v-separator"></div>
+                    <div class="user-profile">
+                        <span class="status-dot"></span>
+                        Staff Profile
+                    </div>
+                </div>
+            </header>
+
+
+        <div class="content-body">
+            <div id="scan-box" class="tab-content">
+                <section class="glass-card">
+                    <div class="card-header">
+                        <h2>Scan Barcode</h2>
+                        <p>Process incoming items quickly</p>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="barcodeInput" autocomplete="off" placeholder="Tap here and scan..." onkeypress="if(event.key === 'Enter') checkBarcode()">
+                        <button class="btn-primary" onclick="checkBarcode()">Check System</button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="quick-use-box" class="tab-content" style="display:none;">
+                <section class="glass-card">
+                    <div class="card-header">
+                        <h2 style="color: #ef4444;">⚡ Quick Dispatch</h2>
+                        <p>Scan a barcode to immediately mark it as USED and archive it.</p>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="quickUseInput" placeholder="Scan to use immediately..." onkeypress="if(event.key === 'Enter') processQuickUse()">
+                        <button class="btn-primary" style="background: #ef4444;" onclick="processQuickUse()">Dispatch Item</button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="donation-box" class="tab-content" style="display:none;">
+                <section class="glass-card">
+                    <div class="card-header">
+                        <h2>Donation Details</h2>
+                    </div>
+                    <div class="form-grid">
+                        <input type="text" id="donationBarcode" placeholder="Barcode Number" readonly>
+                        <input type="text" id="donor" placeholder="Donor Name">
+                        <input type="text" id="donationItem" placeholder="Item Name">
+                        <input type="number" id="donationQty" placeholder="Quantity">
+                        <input type="date" id="donationExp">
+                        <button class="btn-primary" onclick="saveDonation()">Save Donation</button>
+                    </div>
+                </section>
+            </div>
+
+<div id="generate-box" class="tab-content" style="display:none;">
+    <section class="glass-card full-width" style="padding: 0; overflow: hidden;">
+        <div style="padding: 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9;">
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 800; color: #0f172a;">Label Production</h2>
+                <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9rem;">Generate and manage inventory tracking tags</p>
+            </div>
+            <button class="btn-main-action" onclick="addBarcode()">
+                <span class="icon">+</span> Generate Unique Barcode
+            </button>
+        </div>
+
+        <div class="toolbar-ribbon">
+            <div class="queue-info">
+                <div class="dot-indicator"></div>
+                <span id="queue-count-display">0 Items in Buffer</span>
+            </div>
+            
+            <div class="toolbar-actions">
+                <button class="btn-tool" onclick="saveBarcodesAsPDF()">
+                    <span class="t-icon">📥</span> Export PDF
+                </button>
+                <button class="btn-tool btn-success" onclick="printBarcodes()">
+                    <span class="t-icon">🖨️</span> Print All Labels
+                </button>
+                <div class="v-separator"></div>
+                <button class="btn-danger-text" onclick="clearQueue()">Clear Queue</button>
+            </div>
+        </div>
+
+        <div style="padding: 0 24px 24px 24px;">
+            <div class="table-frame">
+                <table class="pro-table">
+                    <thead>
+                        <tr>
+                            <th width="80">#</th>
+                            <th>Barcode Preview</th>
+                            <th>Identification Number</th>
+                            <th width="120" style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="barcodeList"></tbody>
+                </table>
+                <div id="empty-state" class="empty-view">
+                    <span style="font-size: 3rem; display: block; margin-bottom: 10px;">🏷️</span>
+                    <p>Production queue is empty. Click generate to start.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+            <div id="inventory-box" class="tab-content" style="display:none;">
+                <section class="glass-card full-width">
+                    <div class="card-header">
+                        <h2 style="font-weight: 700;">Live Warehouse Inventory</h2>
+                        <p style="color: #64748b;">Real-time stock levels and expiration tracking.</p>
+                       <div class="inventory-controls">
+    <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="inventorySearch" 
+               placeholder="Search inventory..." 
+               oninput="filterInventory()">
+    </div>
+
+    <div class="sort-container">
+        <span class="sort-label">Sort By:</span>
+        <select id="inventorySort" onchange="loadInventory(this.value)">
+            <option value="all">📁 All Items</option>
+            <option value="expiry-asc">🕒 Expiration (Soonest)</option>
+            <option value="expiry-desc">📅 Expiration (Latest)</option>
+            <option value="stock-high">📈 Stock (High to Low)</option>
+            <option value="stock-low">📉 Stock (Low to High)</option>
+        </select>
+    </div>
+</div>
+                    <div class="table-container">
+                        <table id="inventoryTable" class="pro-table">
+                            <thead>
+                                <tr>
+                                    <th>Barcode</th>
+                                    <th>Item Description</th>
+                                    <th>Donator</th>
+                                    <th>Qty</th>
+                                    <th>Expiration</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div id="history-box" class="tab-content" style="display:none;">
+                <section class="glass-card full-width">
+                    <div class="card-header">
+                        <h2>Usage History Archive</h2>
+                        <p>A log of all items that have been marked as USED or Dispatched.</p>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="pro-table">
+                            <thead>
+                                <tr>
+                                    <th>Barcode</th>
+                                    <th>Item Description</th>
+                                    <th>Qty</th>
+                                    <th>Date Used</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-list-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="editModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="glass-card" style="width: 100%; max-width: 500px; padding: 2rem;">
+        <h2 style="margin-bottom: 1.5rem;">Edit Inventory Item</h2>
+        <input type="hidden" id="editBarcode">
+        <label>Item Name</label><input type="text" id="editItem">
+        <label>Donor Name</label><input type="text" id="editDonor">
+        <label>Quantity</label><input type="number" id="editQty">
+        <label>Expiration Date</label><input type="date" id="editExp">
+        <div style="display: flex; gap: 10px; margin-top: 1rem;">
+            <button class="btn-primary" onclick="saveEdit()">Update Changes</button>
+            <button class="btn-outline" onclick="closeEditModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
